@@ -279,13 +279,21 @@ endfunction
 
 " s:cword_query() {{{2
 function! s:cword_query(flags)
+  let tool = s:get_current_tool(a:flags)
   let w = expand('<cword>')
 
   if empty(w)
     return ''
   endif
 
-  return s:escape_query(a:flags, w)
+  " like s:escape_query, without the shellescape
+  let escaped = has_key(tool, 'escape')
+        \ ? escape(w, tool.escape)
+        \ : w
+  let a:flags.query_escaped = 1
+
+  " FIXME: '\b' is probably not compatible with all tools
+  return shellescape('\b' . escaped . '\b')
 endfunction
 
 " s:change_working_directory() {{{2
